@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Channel {
+  EMAIL
+  SMS
+  PUSH
+}
+
+enum EventStatus {
+  RECEIVED
+  PROCESSING
+  DONE
+  FAILED
+}
+
+enum DeliveryStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  DEAD
+}
+
+model Event {
+  id        String      @id @default(uuid())
+  type      String
+  payload   Json
+  status    EventStatus @default(RECEIVED)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  logs      DeliveryLog[]
+}
+
+model NotificationTemplate {
+  id        String   @id @default(uuid())
+  eventType String
+  channel   Channel
+  subject   String?
+  body      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([eventType, channel])
+}
+
+model DeliveryLog {
+  id          String         @id @default(uuid())
+  eventId     String
+  channel     Channel
+  status      DeliveryStatus @default(QUEUED)
+  provider    String
+  attempts    Int            @default(0)
+  error       String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id])
+}
