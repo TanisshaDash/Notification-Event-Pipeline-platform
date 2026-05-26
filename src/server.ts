@@ -4,6 +4,7 @@ import { eventsRoute }       from "./routes/events";
 import { deliveryLogsRoute } from "./routes/delivery-logs";
 import { jobsRoute }         from "./routes/jobs";
 import { metricsRoute }      from "./routes/metrics";
+import { templatesRoute }    from "./routes/templates";
 
 const app = Fastify({ logger: true });
 
@@ -11,6 +12,7 @@ app.register(eventsRoute,       { prefix: "/api/v1" });
 app.register(deliveryLogsRoute, { prefix: "/api/v1" });
 app.register(jobsRoute,         { prefix: "/api/v1" });
 app.register(metricsRoute,      { prefix: "/api/v1" });
+app.register(templatesRoute,    { prefix: "/api/v1" });
 
 app.get("/health", async () => ({ status: "ok" }));
 

@@ -50,8 +50,4 @@ new Worker<EmailJob>("email", async (job: Job<EmailJob>) => {
   });
 }, {
   connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: "exponential", delay: 5000 }, // 5s → 25s → 125s
-  },
 });
