@@ -1,5 +1,7 @@
 import Fastify from "fastify";
-import { env } from "./env";
+import { env } from "./config";
+import { authenticate } from "./plugins/jwt";
+import { authRoute }         from "./routes/auth";
 import { eventsRoute }       from "./routes/events";
 import { deliveryLogsRoute } from "./routes/delivery-logs";
 import { jobsRoute }         from "./routes/jobs";
@@ -8,11 +10,18 @@ import { templatesRoute }    from "./routes/templates";
 
 const app = Fastify({ logger: true });
 
-app.register(eventsRoute,       { prefix: "/api/v1" });
-app.register(deliveryLogsRoute, { prefix: "/api/v1" });
-app.register(jobsRoute,         { prefix: "/api/v1" });
-app.register(metricsRoute,      { prefix: "/api/v1" });
-app.register(templatesRoute,    { prefix: "/api/v1" });
+// Public routes (no auth)
+app.register(authRoute, { prefix: "/api/v1" });
+
+// Protected routes (require JWT)
+app.register(async (protectedApp) => {
+  protectedApp.addHook("preHandler", authenticate);
+  protectedApp.register(eventsRoute,       { prefix: "/api/v1" });
+  protectedApp.register(deliveryLogsRoute, { prefix: "/api/v1" });
+  protectedApp.register(jobsRoute,         { prefix: "/api/v1" });
+  protectedApp.register(metricsRoute,      { prefix: "/api/v1" });
+  protectedApp.register(templatesRoute,    { prefix: "/api/v1" });
+});
 
 app.get("/health", async () => ({ status: "ok" }));
 
