@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.pushQueue = exports.smsQueue = exports.emailQueue = exports.fanoutQueue = void 0;
+const bullmq_1 = require("bullmq");
+const env_1 = require("../env");
+const connection = { url: env_1.env.REDIS_URL };
+exports.fanoutQueue = new bullmq_1.Queue("fanout", { connection });
+exports.emailQueue = new bullmq_1.Queue("email", { connection });
+exports.smsQueue = new bullmq_1.Queue("sms", { connection });
+exports.pushQueue = new bullmq_1.Queue("push", { connection });
