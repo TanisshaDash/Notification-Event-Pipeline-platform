@@ -1,11 +1,14 @@
-import react from "@vitejs/plugin-react";
+export default (async () => {
+  const { defineConfig } = await import("vite");
+  const react = (await import("@vitejs/plugin-react")).default;
 
-export default {
-  plugins: [react()],
-  server: {
-    port: 5173,
-    proxy: {
-      "/api": "http://localhost:3000",
+  return {
+    plugins: [react()],
+    server: {
+      port: 5173,
+      proxy: {
+        "/api": "http://localhost:3000",
+      },
     },
-  },
-} as any;
+  };
+});
