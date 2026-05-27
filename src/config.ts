@@ -8,6 +8,7 @@ const schema = z.object({
   JWT_SECRET: z.string(),
 
   SENDGRID_API_KEY: z.string().optional(),
+  FAST2SMS_API_KEY: z.string().optional(),
   MSG91_API_KEY: z.string().optional(),
   MSG91_SENDER_ID: z.string().optional(),
   MSG91_TEMPLATE_ID: z.string().optional(),
