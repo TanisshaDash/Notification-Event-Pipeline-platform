@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { env } from "./config/env";
+import { env } from "./config";
 import { authenticate } from "./plugins/jwt";
 import { authRoute }         from "./routes/auth";
 import { eventsRoute }       from "./routes/events";

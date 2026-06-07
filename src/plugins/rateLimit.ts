@@ -6,7 +6,7 @@ const REDIS_URL = (() => {
   try {
     // attempt to require local config if it exists
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const cfg = require("../config/env");
+    const cfg = require("../config");
     return cfg?.env?.REDIS_URL ?? cfg?.REDIS_URL ?? process.env.REDIS_URL;
   } catch (e) {
     return process.env.REDIS_URL;
