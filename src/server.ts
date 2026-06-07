@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { env } from "./config";
+import { env } from "./config/env";
 import { authenticate } from "./plugins/jwt";
 import { authRoute }         from "./routes/auth";
 import { eventsRoute }       from "./routes/events";
@@ -7,13 +7,17 @@ import { deliveryLogsRoute } from "./routes/delivery-logs";
 import { jobsRoute }         from "./routes/jobs";
 import { metricsRoute }      from "./routes/metrics";
 import { templatesRoute }    from "./routes/templates";
+import { sendgridWebhook }   from "./routes/webhooks/sendgrid";
+import { fast2smsWebhook }   from "./routes/webhooks/fast2sms";
 
 const app = Fastify({ logger: true });
 
-// Public routes (no auth)
-app.register(authRoute, { prefix: "/api/v1" });
+// Public routes
+app.register(authRoute,        { prefix: "/api/v1" });
+app.register(sendgridWebhook,  { prefix: "/api/v1" });
+app.register(fast2smsWebhook,  { prefix: "/api/v1" });
 
-// Protected routes (require JWT)
+// Protected routes
 app.register(async (protectedApp) => {
   protectedApp.addHook("preHandler", authenticate);
   protectedApp.register(eventsRoute,       { prefix: "/api/v1" });

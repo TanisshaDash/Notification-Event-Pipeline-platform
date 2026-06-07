@@ -1,22 +1,21 @@
-import { useMetrics }    from "./hooks/useMetrics";
-import { QueueCards }    from "./components/QueueCards";
-import { DeliveryTable } from "./components/DeliveryTable";
-import { FireEvent }     from "./components/FireEvent";
-import { Landing }       from "./components/Landing";
-import { Login }         from "./components/Login";
 import { useState } from "react";
+import { useMetrics } from "./hooks/useMetrics";
+import { QueueCards }      from "./components/QueueCards";
+import { DeliveryTable }   from "./components/DeliveryTable";
+import { FireEvent }       from "./components/FireEvent";
+import { Landing }         from "./components/Landing";
+import { Login }           from "./components/Login";
+import { TemplateManager } from "./components/TemplateManager";
 
 type Page = "landing" | "login" | "dashboard";
+type Tab  = "logs" | "templates";
 
-// Store token in memory (cleared on refresh — fine for demo)
 let memoryToken = "";
-
 export function getToken() { return memoryToken; }
 
 export default function App() {
-  const [page, setPage]       = useState<Page>("landing");
-  const [token, setToken]     = useState("");
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [page, setPage]   = useState<Page>("landing");
+  const [token, setToken] = useState("");
 
   const handleLogin = (t: string) => {
     memoryToken = t;
@@ -33,16 +32,13 @@ export default function App() {
   if (page === "landing") return <Landing onLogin={() => setPage("login")} />;
   if (page === "login")   return <Login onSuccess={handleLogin} onBack={() => setPage("landing")} />;
 
-  return <Dashboard token={token} onLogout={handleLogout} refreshKey={refreshKey} setRefreshKey={setRefreshKey} />;
+  return <Dashboard token={token} onLogout={handleLogout} />;
 }
 
-function Dashboard({ token, onLogout, refreshKey, setRefreshKey }: {
-  token: string;
-  onLogout: () => void;
-  refreshKey: number;
-  setRefreshKey: (fn: (k: number) => number) => void;
-}) {
+function Dashboard({ token, onLogout }: { token: string; onLogout: () => void }) {
   const { queues, connected } = useMetrics(token);
+  const [tab, setTab]         = useState<Tab>("logs");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const totalDelivered = queues.reduce((a, q) => a + q.completed, 0);
   const totalFailed    = queues.reduce((a, q) => a + q.failed, 0);
@@ -57,8 +53,7 @@ function Dashboard({ token, onLogout, refreshKey, setRefreshKey }: {
       }} />
 
       <header style={{
-        borderBottom: "1px solid var(--border)",
-        padding: "0 32px",
+        borderBottom: "1px solid var(--border)", padding: "0 32px",
         display: "flex", alignItems: "center", height: 56,
         position: "sticky", top: 0, background: "var(--bg)", zIndex: 100,
       }}>
@@ -76,7 +71,7 @@ function Dashboard({ token, onLogout, refreshKey, setRefreshKey }: {
           ].map(s => (
             <div key={s.label} style={{ textAlign: "right" }}>
               <div style={{ fontFamily: "var(--mono)", fontSize: 16, fontWeight: 700, color: s.color, lineHeight: 1 }}>{s.val}</div>
-              <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--text3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{s.label}</div>
+              <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--text3)", letterSpacing: "0.1em", textTransform: "uppercase" as const }}>{s.label}</div>
             </div>
           ))}
 
@@ -100,22 +95,35 @@ function Dashboard({ token, onLogout, refreshKey, setRefreshKey }: {
       </header>
 
       <main style={{ padding: "32px", maxWidth: 1400, margin: "0 auto" }}>
-        <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text3)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
+        {/* Queue stats */}
+        <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text3)", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 10 }}>
           queue status — updates every 3s
         </div>
         <div style={{ marginBottom: 32 }}>
           <QueueCards queues={queues} />
         </div>
 
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+          {(["logs", "templates"] as Tab[]).map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{
+              fontFamily: "var(--mono)", fontSize: 11, padding: "6px 16px",
+              background: tab === t ? "var(--text)" : "transparent",
+              color: tab === t ? "var(--bg)" : "var(--text2)",
+              border: "1px solid var(--border2)", cursor: "pointer",
+              letterSpacing: "0.05em",
+            }}>{t}</button>
+          ))}
+        </div>
+
+        {/* Tab content */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 24, alignItems: "start" }}>
           <div>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text3)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
-              delivery logs
-            </div>
-            <DeliveryTable key={refreshKey} token={token} />
+            {tab === "logs"      && <DeliveryTable key={refreshKey} token={token} />}
+            {tab === "templates" && <TemplateManager token={token} />}
           </div>
           <div>
-            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text3)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text3)", letterSpacing: "0.1em", textTransform: "uppercase" as const, marginBottom: 10 }}>
               test
             </div>
             <FireEvent token={token} onFired={() => setTimeout(() => setRefreshKey(k => k + 1), 800)} />
