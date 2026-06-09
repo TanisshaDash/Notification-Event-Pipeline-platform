@@ -33,6 +33,9 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+
+  events    Event[]
+  templates NotificationTemplate[]
 }
 
 model Event {
@@ -40,9 +43,12 @@ model Event {
   type      String
   payload   Json
   status    EventStatus @default(RECEIVED)
+  userId    String
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  logs      DeliveryLog[]
+
+  user User          @relation(fields: [userId], references: [id])
+  logs DeliveryLog[]
 }
 
 model NotificationTemplate {
@@ -52,9 +58,12 @@ model NotificationTemplate {
   subject   String?
   body      String
   active    Boolean  @default(true)
+  userId    String
   createdAt DateTime @default(now())
 
-  @@unique([eventType, channel])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([eventType, channel, userId])
 }
 
 model DeliveryLog {

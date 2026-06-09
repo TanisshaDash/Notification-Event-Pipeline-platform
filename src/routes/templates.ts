@@ -27,11 +27,17 @@ export async function templatesRoute(app: FastifyInstance) {
 
   // POST /api/v1/templates
   app.post("/templates", async (req, reply) => {
-    const body = createSchema.safeParse(req.body);
-    if (!body.success) return reply.status(400).send({ error: body.error.flatten() });
-    const t = await prisma.notificationTemplate.create({ data: body.data });
-    return reply.status(201).send(t);
+  const userId = (req as any).user.userId;
+  const body   = createSchema.safeParse(req.body);
+  if (!body.success) return reply.status(400).send({ error: body.error.flatten() });
+  const t = await prisma.notificationTemplate.create({
+    data: {
+      ...body.data,
+      user: { connect: { id: userId } },
+    },
   });
+  return reply.status(201).send(t);
+});
 
   // PATCH /api/v1/templates/:id
   app.patch<{ Params: { id: string } }>("/templates/:id", async (req, reply) => {
