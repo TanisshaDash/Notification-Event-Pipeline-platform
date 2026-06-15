@@ -6,6 +6,7 @@ Fire one event. NOTIFY routes it to Email, SMS, and Push automatically.
 
 ---
 
+
 ## How it works
 
 ```bash
